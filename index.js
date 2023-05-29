@@ -43,24 +43,27 @@ client.on("messageCreate", async (message) => {
     role: "user",
     content: message.content,
   });
-
-  const result = await openai.createChatCompletion({
-    model: "gpt-3.5-turbo",
-    messages: conversationLog,
-  });
-
-  const prompt =
-    "An oil painting about " + result.data.choices[0].message.content;
-  console.log(prompt);
-  const image = await openai.createImage({
-    prompt: prompt,
-    n: 1,
-    size: "1024x1024",
-  });
-
-  response = image.data.data[0].url;
-
-  message.reply(response);
+  try {
+    const result = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo",
+      messages: conversationLog,
+    });
+    const prompt =
+      "An oil painting about " + result.data.choices[0].message.content;
+    try {
+      const image = await openai.createImage({
+        prompt: prompt,
+        n: 1,
+        size: "1024x1024",
+      });
+      response = image.data.data[0].url;
+      message.reply(response);
+    } catch (error) {
+      return message.reply(error.response.data.error.message);
+    }
+  } catch (error) {
+    return message.reply(error.response.data.error.message);
+  }
 });
 
 client.login(process.env.TOKEN);
